@@ -1,15 +1,17 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { Direction } from '../types';
+import { Direction, GameMode } from '../types';
 
 interface GameControlsProps {
   onDirectionChange: (direction: Direction) => void;
   disabled?: boolean;
+  gameMode: GameMode; // Accept mode
 }
 
 export const GameControls: React.FC<GameControlsProps> = ({
   onDirectionChange,
   disabled = false,
+  gameMode,
 }) => {
   const createButton = (direction: Direction, label: string, style: any) => (
     <TouchableOpacity
@@ -28,13 +30,21 @@ export const GameControls: React.FC<GameControlsProps> = ({
         {createButton('UP', '↑', styles.center)}
       </View>
 
-      {/* Middle Row: LEFT, FORWARD/BACKWARD, RIGHT */}
+      {/* Middle Row: LEFT, RIGHT (and FWD/BACK only for 3D) */}
       <View style={styles.row}>
         {createButton('LEFT', '←', styles.side)}
-        <View style={styles.verticalGroup}>
-          {createButton('FORWARD', '▲', styles.small)}
-          {createButton('BACKWARD', '▼', styles.small)}
-        </View>
+        
+        {/* Only show Forward/Backward in 3D Mode */}
+        {gameMode === '3D' && (
+          <View style={styles.verticalGroup}>
+            {createButton('FORWARD', '▲', styles.small)}
+            {createButton('BACKWARD', '▼', styles.small)}
+          </View>
+        )}
+        
+        {/* Spacer for 2D mode to keep layout balanced if needed, or just standard */}
+        {gameMode === '2D' && <View style={{ width: 20 }} />} 
+
         {createButton('RIGHT', '→', styles.side)}
       </View>
 

@@ -1,24 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   StatusBar,
-  TouchableOpacity,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, Direction } from '../types';
 import { useGameStore } from '../store/gameStore';
 import { useScoresStore } from '../store/scoresStore';
-import { Scene3D } from '../components/Scene3D'; // Import our new component
+import { Scene3D } from '../components/Scene3D';
+import { Scene2D } from '../components/Scene2D'; // Import new 2D Scene
 import { GameControls } from '../components/GameControls';
 import { GameHUD } from '../components/GameHUD';
-import { GameOverModal } from './GameOverScreen'; // Use the modal component
+import { GameOverModal } from './GameOverScreen';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Game'>;
 
 export const GameScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { difficulty } = route.params;
+  const { difficulty, gameMode } = route.params; // Get gameMode
   const gameState = useGameStore();
   const { scores, updateScore } = useScoresStore();
   
@@ -27,7 +26,7 @@ export const GameScreen: React.FC<Props> = ({ route, navigation }) => {
 
   // Initialize game
   useEffect(() => {
-    gameState.reset(difficulty);
+    gameState.reset(difficulty, gameMode); // Pass mode to reset
     return () => stopLoop();
   }, []);
 
@@ -75,9 +74,9 @@ export const GameScreen: React.FC<Props> = ({ route, navigation }) => {
     <View style={styles.container}>
       <StatusBar hidden />
       
-      {/* 3D View Layer */}
+      {/* View Layer - Switch based on mode */}
       <View style={styles.sceneContainer}>
-        <Scene3D />
+        {gameMode === '3D' ? <Scene3D /> : <Scene2D />}
       </View>
 
       {/* UI Overlay Layer */}
@@ -94,6 +93,7 @@ export const GameScreen: React.FC<Props> = ({ route, navigation }) => {
         <GameControls 
           onDirectionChange={handleDirection} 
           disabled={gameState.status !== 'PLAYING'}
+          gameMode={gameMode} // Pass mode to controls
         />
       </View>
 
@@ -105,11 +105,11 @@ export const GameScreen: React.FC<Props> = ({ route, navigation }) => {
         isNewBest={gameState.score > scores[difficulty]}
         onRetry={() => {
           setShowGameOver(false);
-          gameState.reset(difficulty);
+          gameState.reset(difficulty, gameMode);
         }}
         onChangeLevel={() => {
           setShowGameOver(false);
-          navigation.navigate('LevelSelect');
+          navigation.navigate('LevelSelect', { gameMode });
         }}
         onHome={() => {
           setShowGameOver(false);

@@ -16,9 +16,10 @@ import { useScoresStore } from '../store/scoresStore';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'LevelSelect'>;
 
-export const LevelSelectScreen: React.FC<Props> = ({ navigation }) => {
+export const LevelSelectScreen: React.FC<Props> = ({ navigation, route }) => {
   const { t } = useTranslation();
   const scores = useScoresStore((state) => state.scores);
+  const { gameMode } = route.params; // Get the mode passed from Home
 
   const levels: Array<{
     difficulty: Difficulty;
@@ -50,6 +51,7 @@ export const LevelSelectScreen: React.FC<Props> = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
       <ScrollView contentContainerStyle={styles.scrollContent}>
+        <Text style={styles.modeIndicator}>Mode: {gameMode}</Text>
         <Text style={styles.title}>{t('levelSelect.title')}</Text>
 
         {levels.map((level) => (
@@ -64,7 +66,10 @@ export const LevelSelectScreen: React.FC<Props> = ({ navigation }) => {
             <Button
               title={t('common.play')}
               onPress={() =>
-                navigation.navigate('Game', { difficulty: level.difficulty })
+                navigation.navigate('Game', { 
+                  difficulty: level.difficulty,
+                  gameMode: gameMode // Pass mode to Game screen
+                })
               }
               variant="primary"
               style={styles.levelButton}
@@ -91,6 +96,13 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 20,
     alignItems: 'center',
+  },
+  modeIndicator: {
+    color: '#ffffff',
+    opacity: 0.6,
+    fontSize: 16,
+    marginBottom: 10,
+    fontWeight: 'bold',
   },
   title: {
     fontSize: 32,

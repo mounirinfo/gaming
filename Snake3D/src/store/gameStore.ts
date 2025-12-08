@@ -1,9 +1,5 @@
-// ============================================
-// FILE: src/store/gameStore.ts - FIXED
-// ============================================
-
 import { create } from 'zustand';
-import { GameState, Direction, Difficulty } from '../types';
+import { GameState, Direction, Difficulty, GameMode } from '../types';
 import { GameEngine } from '../game/GameEngine';
 import { LEVELS } from '../game/levels';
 
@@ -12,66 +8,58 @@ interface GameStore extends GameState {
   tick: () => void;
   pause: () => void;
   resume: () => void;
-  reset: (difficulty: Difficulty) => void;
+  reset: (difficulty: Difficulty, mode: GameMode) => void;
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
-  // Initial dummy state
+  // État initial factice
   snake: [],
   food: { x: 0, y: 0, z: 0 },
+  foodType: 'NORMAL',
+  foodEatenCount: 0,
+  floatingTexts: [],
   direction: 'RIGHT',
   nextDirection: 'RIGHT',
   score: 0,
   status: 'IDLE',
   level: LEVELS.EASY,
   speed: 400,
+  gameMode: '3D',
 
   changeDirection: (direction: Direction) => {
-    const { direction: currentDir, status, nextDirection } = get();
+    const { direction: currentDir, status, gameMode } = get();
     
-    if (status !== 'PLAYING') {
-      console.log('Cannot change direction - game not playing');
+    if (status !== 'PLAYING') return;
+
+    // Empêcher les mouvements 3D (Avant/Arrière) en mode 2D
+    if (gameMode === '2D' && (direction === 'FORWARD' || direction === 'BACKWARD')) {
       return;
     }
     
-    // Check if the new direction is valid (not opposite to current)
     if (GameEngine.isValidDirectionChange(currentDir, direction)) {
-      console.log('Direction changed from', currentDir, 'to', direction);
       set({ nextDirection: direction });
-    } else {
-      console.log('Invalid direction change from', currentDir, 'to', direction);
     }
   },
 
   tick: () => {
     const state = get();
-    
-    if (state.status !== 'PLAYING') {
-      return;
-    }
+    if (state.status !== 'PLAYING') return;
     
     const newState = GameEngine.moveSnake(state);
     set(newState);
-    
-    if (newState.status === 'GAME_OVER') {
-      console.log('Game Over! Final Score:', newState.score);
-    }
   },
 
   pause: () => {
-    console.log('Game paused');
     set({ status: 'PAUSED' });
   },
 
   resume: () => {
-    console.log('Game resumed');
     set({ status: 'PLAYING' });
   },
 
-  reset: (difficulty: Difficulty) => {
+  reset: (difficulty: Difficulty, mode: GameMode) => {
     const level = LEVELS[difficulty];
-    const newState = GameEngine.initializeGame(level);
-    console.log('Game reset with difficulty:', difficulty);
+    const newState = GameEngine.initializeGame(level, mode);
     set(newState);
   },
 }));
