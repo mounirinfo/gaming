@@ -1,0 +1,5 @@
+{
+  "name": "Avoider Pro",
+  "description": "A high-performance top-down avoider game built with Expo SDK 54 and Skia.",
+  "requestFramePermissions": []
+}
