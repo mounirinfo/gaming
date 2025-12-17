@@ -12,7 +12,7 @@ interface GameStore extends GameState {
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
-  // État initial factice
+  // État initial
   snake: [],
   food: { x: 0, y: 0, z: 0 },
   foodType: 'NORMAL',
